@@ -1409,6 +1409,7 @@ struct TextInput{
 	DWORD color = RGBA(120, 120, 120);
 	DWORD focusColor = RGBA(180, 180, 180);
 	std::string text;
+	std::string backgroundText;
 	ErrCode (*event)(void*)noexcept = defaultTextInputEvent;	//Event das bei Eingabe von Enter gecalled wird
 };
 
@@ -1424,7 +1425,7 @@ void textInputCharEvent(TextInput& textInput, BYTE character)noexcept{
 				if(textInput.text.size() > 0) textInput.text.pop_back();
 				break;
 			case 13:	//Enter
-				ErrCheck(textInput.event(nullptr));
+				ErrCheck(textInput.event(nullptr));	//TODO Sollte ansatt nullptr das data Feld (noch anlegen) der Instanz bekommen
 				break;
 			default:
 				if(character < 32 || character > 126) break;
@@ -1449,12 +1450,19 @@ void updateTextInput(Window& window, TextInput& textInput, Font& font, std::vect
 	if(getTextInputFlag(textInput, HASFOCUS)){
 		if(getTextInputFlag(textInput, SCALETOTEXT)) rectangles.push_back({textInput.pos.x, textInput.pos.y, textInput.size.x, textInput.textSize, textInput.focusColor});
 		else rectangles.push_back({textInput.pos.x, textInput.pos.y, textInput.size.x, textInput.size.y, textInput.focusColor});
+		DWORD offset = 0;
 		if(getTextInputFlag(textInput, TEXTCENTERED)){
 			int offsetY = (textInput.size.y-textInput.textSize)/2;
-			DWORD offset = drawFontString(window, font, glyphs, textInput.text.c_str(), textInput.pos.x, textInput.pos.y+offsetY);
+			if(textInput.text.size() > 0)
+				offset = drawFontString(window, font, glyphs, textInput.text.c_str(), textInput.pos.x, textInput.pos.y+offsetY);
+			else
+				drawFontString(window, font, glyphs, textInput.backgroundText.c_str(), textInput.pos.x, textInput.pos.y+offsetY);
 			rectangles.push_back({(WORD)(textInput.pos.x+offset), (WORD)(textInput.pos.y+offsetY), 2, textInput.textSize, RGBA(220, 220, 220)});
 		}else{
-			DWORD offset = drawFontString(window, font, glyphs, textInput.text.c_str(), textInput.pos.x, textInput.pos.y);
+			if(textInput.text.size() > 0)
+				offset = drawFontString(window, font, glyphs, textInput.text.c_str(), textInput.pos.x, textInput.pos.y);
+			else
+				drawFontString(window, font, glyphs, textInput.backgroundText.c_str(), textInput.pos.x, textInput.pos.y);
 			rectangles.push_back({(WORD)(textInput.pos.x+offset), textInput.pos.y, 2, textInput.textSize, RGBA(220, 220, 220)});
 		}
 	}else{
@@ -1462,9 +1470,15 @@ void updateTextInput(Window& window, TextInput& textInput, Font& font, std::vect
 		else rectangles.push_back({textInput.pos.x, textInput.pos.y, textInput.size.x, textInput.size.y, textInput.color});
 		if(getTextInputFlag(textInput, TEXTCENTERED)){
 			int offsetY = (textInput.size.y-textInput.textSize)/2;
-			drawFontString(window, font, glyphs, textInput.text.c_str(), textInput.pos.x, textInput.pos.y+offsetY);
+			if(textInput.text.size() > 0)
+				drawFontString(window, font, glyphs, textInput.text.c_str(), textInput.pos.x, textInput.pos.y+offsetY);
+			else
+				drawFontString(window, font, glyphs, textInput.backgroundText.c_str(), textInput.pos.x, textInput.pos.y+offsetY);
 		}else{
-			drawFontString(window, font, glyphs, textInput.text.c_str(), textInput.pos.x, textInput.pos.y);
+			if(textInput.text.size() > 0)
+				drawFontString(window, font, glyphs, textInput.text.c_str(), textInput.pos.x, textInput.pos.y);
+			else
+				drawFontString(window, font, glyphs, textInput.backgroundText.c_str(), textInput.pos.x, textInput.pos.y);
 		}
 	}
 	font.pixelSize = tmpSize;
