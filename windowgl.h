@@ -84,6 +84,7 @@ PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
 PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 PFNGLDISPATCHCOMPUTEPROC glDispatchCompute;
 PFNGLMEMORYBARRIERPROC glMemoryBarrier;
+PFNGLREADPIXELSPROC glReadPixels;
 
 //TODO sollte einen OpenGL Kontext erstellen bevor das aufgerufen wird
 ErrCode initDrawLinesProgram()noexcept;
@@ -159,6 +160,7 @@ ErrCode init()noexcept{
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)loadGlFunction("wglSwapIntervalEXT");
 	glDispatchCompute = (PFNGLDISPATCHCOMPUTEPROC)loadGlFunction("glDispatchCompute");
 	glMemoryBarrier = (PFNGLMEMORYBARRIERPROC)loadGlFunction("glMemoryBarrier");
+	glReadPixels = (PFNGLREADPIXELSPROC)loadGlFunction("glReadPixels");
 	if(ErrCheck(initDrawLinesProgram(), "Draw Lines initialisieren") != SUCCESS) return GENERIC_ERROR;
 	if(ErrCheck(initDrawCirclesProgram(), "Draw Circles initialisieren") != SUCCESS) return GENERIC_ERROR;
 	if(ErrCheck(initDrawRectanglesProgram(), "Draw Rectangles initialisieren") != SUCCESS) return GENERIC_ERROR;
@@ -1411,6 +1413,7 @@ struct TextInput{
 	std::string text;
 	std::string backgroundText;
 	ErrCode (*event)(void*)noexcept = defaultTextInputEvent;	//Event das bei Eingabe von Enter gecalled wird
+	void* data;
 };
 
 constexpr void setTextInputFlag(TextInput& textInput, TEXTINPUTFLAGS flag)noexcept{textInput.flags |= flag;}
@@ -1425,13 +1428,20 @@ void textInputCharEvent(TextInput& textInput, BYTE character)noexcept{
 				if(textInput.text.size() > 0) textInput.text.pop_back();
 				break;
 			case 13:	//Enter
-				ErrCheck(textInput.event(nullptr));	//TODO Sollte ansatt nullptr das data Feld (noch anlegen) der Instanz bekommen
+				ErrCheck(textInput.event(textInput.data));
 				break;
 			default:
 				if(character < 32 || character > 126) break;
 				textInput.text += character;
 				break;
 		}
+	}
+}
+
+//Sollte aufgerufen werden, wenn z.B. ctrl + v genutzt wird
+void textInputCharEvent(TextInput& textInput, const char* string)noexcept{
+	if(getTextInputFlag(textInput, HASFOCUS)){
+		textInput.text += string;
 	}
 }
 
