@@ -1194,6 +1194,17 @@ DWORD getFontStringSize(Font& font, const char* string)noexcept{
 	return size;
 }
 
+DWORD drawFontStringCentered(Window& window, Font& font, std::vector<CharData>& glyphs, const char* string, WORD x, WORD y)noexcept{
+	WORD offset = 0;
+	x -= getFontStringSize(font, string)/2;
+	for(size_t i=0; i < strlen(string); ++i){
+		glyphs.push_back({(WORD)(x+offset), y, font.pixelSize, (BYTE)string[i]});
+		float scalingFactor = ((float)(font.yMax-font.yMin))/font.pixelSize;
+		offset += font.horMetricsCount > 1 ? font.horMetrics[font.asciiToGlyphMapping[string[i]]].advanceWidth/scalingFactor : font.horMetrics[0].advanceWidth/scalingFactor;
+	}
+	return offset;
+}
+
 //-------------------------------3D--------------------------------
 
 struct Camera{
@@ -1354,8 +1365,7 @@ void updateButtons(Window& window, Font& font, std::vector<RectangleData>& recta
 struct Label{
 	std::string text;
 	ScreenVec pos = {0, 0};
-	DWORD textcolor = RGBA(180, 180, 180);
-	WORD text_size = 2;
+	WORD text_size = 24;
 };
 
 enum MENUFLAGS{
