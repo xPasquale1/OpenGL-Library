@@ -1368,6 +1368,32 @@ struct Label{
 	WORD text_size = 24;
 };
 
+struct PopupText{
+	ScreenVec pos = {0, 0};
+	WORD textSize = 24;
+	DWORD duration = 2000;	//In ms
+	std::vector<std::string> texts;		//TODO Ersetzen mit Dequeue
+	Timer timer;
+};
+
+void addPopupText(PopupText& popup, const std::string& string)noexcept{
+	popup.texts.push_back(string);
+	if(popup.texts.size() == 1) resetTimer(popup.timer);
+}
+
+void updatePopupText(Window& window, Font& font, PopupText& popup, std::vector<CharData>& chars)noexcept{
+	if(popup.texts.size() > 0){
+		drawFontString(window, font, chars, popup.texts[0].c_str(), popup.pos.x, popup.pos.y);
+	}else{
+		resetTimer(popup.timer);
+	}
+	DWORD timeElapsed = getTimerMillis(popup.timer);
+	if(timeElapsed > popup.duration){
+		popup.texts.erase(popup.texts.begin());
+		resetTimer(popup.timer);
+	}
+}
+
 enum MENUFLAGS{
 	MENU_OPEN=1,
 	MENU_OPEN_TOGGLE=2
