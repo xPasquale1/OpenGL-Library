@@ -121,7 +121,7 @@ std::unordered_map<std::string, std::list<void*>> _memAllocsHints;
 #endif
 
 template<typename T>
-T* alloc(DWORD count, const std::string& tag = "Unknown"){
+T* alloc(QWORD count, const std::string& tag = "Unknown"){
 	T* ptr = new(std::nothrow) T[count];
     #ifdef TRACKMEMORY
     if(ptr){
@@ -147,8 +147,8 @@ void dealloc(T* ptr){
     #endif
 }
 
-DWORD getTotalMemoryUsage(){
-    DWORD total = 0;
+QWORD getTotalMemoryUsage(){
+    QWORD total = 0;
     #ifdef TRACKMEMORY
     for(const auto& it : _memAllocsMap){
         total += it.second.size;
@@ -157,8 +157,8 @@ DWORD getTotalMemoryUsage(){
     return total;
 }
 
-DWORD getMemoryUsageByTag(const std::string& tag){
-    DWORD total = 0;
+QWORD getMemoryUsageByTag(const std::string& tag){
+    QWORD total = 0;
     #ifdef TRACKMEMORY
     std::list<void*> list = _memAllocsHints[tag];
 	if(!list.empty()) return 0;
