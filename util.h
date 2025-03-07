@@ -181,20 +181,21 @@ struct Mouse{
 	char button = 0;	//Bits: LMB, RMB, Rest ungenutzt
 }; static Mouse mouse;
 
-inline constexpr bool getButton(Mouse& mouse, MOUSEBUTTON button){return (mouse.button & button);}
-inline constexpr void setButton(Mouse& mouse, MOUSEBUTTON button){mouse.button |= button;}
-inline constexpr void resetButton(Mouse& mouse, MOUSEBUTTON button){mouse.button &= ~button;}
+constexpr bool getButton(Mouse& mouse, MOUSEBUTTON button){return (mouse.button & button);}
+constexpr void setButton(Mouse& mouse, MOUSEBUTTON button){mouse.button |= button;}
+constexpr void resetButton(Mouse& mouse, MOUSEBUTTON button){mouse.button &= ~button;}
 
 //TODO always inline?, compiler weiß es bestimmt besser
-inline constexpr __attribute__((always_inline)) const char* stringLookUp2(long value){
+constexpr const char* stringLookUp2(long value){
 	return &"001020304050607080900111213141516171819102122232425262728292"
 			"031323334353637383930414243444546474849405152535455565758595"
 			"061626364656667686960717273747576777879708182838485868788898"
 			"09192939495969798999"[value<<1];
 }
 //std::to_string ist langsam, das ist simpel und schnell
+//TODO Nicht Multithreading safe
 static char _dec_to_str_out[12] = "0000000000\0";
-inline const char* longToString(long value){
+const char* longToString(long value){
 	char* ptr = _dec_to_str_out + 10;
 	char c = 0;
 	if(value < 0){
@@ -218,7 +219,7 @@ inline const char* longToString(long value){
 
 //value hat decimals Nachkommestellen
 //TODO das sieht ein bisschen zu komplex aus für das was es eigentlich machen sollte
-inline std::string intToString(int value, BYTE decimals=2){
+std::string intToString(int value, BYTE decimals=2){
 	std::string out = longToString(value);
 	if(out.size() < ((size_t)decimals+1) && out[0] != '-') out.insert(0, (decimals+1)-out.size(), '0');
 	else if(out.size() < ((size_t)decimals+2) && out[0] == '-') out.insert(1, (decimals+1)-(out.size()-1), '0');
@@ -227,10 +228,39 @@ inline std::string intToString(int value, BYTE decimals=2){
 }
 
 //TODO sollte Fälle wie NAN, INF,... zuvor testen
-inline std::string floatToString(float value, BYTE decimals=2){
+std::string floatToString(float value, BYTE decimals=2){
 	WORD precision = pow(10, decimals);
 	long val = value * precision;
 	return intToString(val, decimals);
+}
+
+float stringToFloat(const char* str)noexcept{
+	float result = 0.0f;
+    float factor = 1.0f;
+    int sign = 1;
+    
+    while(*str == ' ') str++;
+
+    if(*str == '-'){
+        sign = -1;
+        str++;
+	}
+
+    while(*str >= '0' && *str <= '9'){
+        result = result * 10.0f + (*str - '0');
+        str++;
+    }
+
+    if(*str == '.'){
+        str++;
+        while(*str >= '0' && *str <= '9'){
+            factor *= 0.1f;
+            result += (*str - '0') * factor;
+            str++;
+        }
+    }
+
+    return result * sign;
 }
 
 enum KEYBOARDBUTTON : unsigned long long{
