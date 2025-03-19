@@ -15,88 +15,6 @@ typedef signed long SDWORD;			//32 Bit signed
 typedef unsigned long long QWORD;	//64 Bit
 typedef signed long long SQWORD;	//64 Bit signed
 
-//TODO sollte das error zeug nicht auch in window.h?
-//Error-Codes
-enum ErrCode{
-	//Fenster
-	SUCCESS = 0,
-	GENERIC_ERROR,
-	APP_INIT,
-	BAD_ALLOC,
-	CREATE_WINDOW,
-	TEXTURE_NOT_FOUND,
-	MODEL_NOT_FOUND,
-	MODEL_BAD_FORMAT,
-	FILE_NOT_FOUND,
-	WINDOW_NOT_FOUND,
-	INIT_RENDER_TARGET,
-	//USB
-	INVALID_USB_HANDLE,
-	COMMSTATE_ERROR,
-	TIMEOUT_SET_ERROR,
-	//Intern
-	OPEN_FILE,
-	//Obj
-	ERR_MODEL_NOT_FOUND,
-	ERR_MATERIAL_NOT_FOUND,
-	ERR_MODEL_BAD_FORMAT,
-	ERR_MATERIAL_BAD_FORMAT
-};
-enum ErrCodeFlags{
-	ERR_NO_FLAG = 0,
-	ERR_NO_OUTPUT = 1,
-	ERR_ON_FATAL = 2
-};
-//TODO ERR_ON_FATAL ausgeben können wenn der nutzer es so möchte
-inline ErrCode ErrCheck(ErrCode code, const char* msg="\0", ErrCodeFlags flags=ERR_NO_FLAG){
-	switch(code){
-	case BAD_ALLOC:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[BAD_ALLOC ERROR] " << msg << std::endl;
-		return code;
-	case GENERIC_ERROR:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[GENERIC_ERROR ERROR] " << msg << std::endl;
-		return code;
-	case CREATE_WINDOW:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[CREATE_WINDOW ERROR] " << msg << std::endl;
-		return code;
-	case TEXTURE_NOT_FOUND:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[TEXTURE_NOT_FOUND ERROR] " << msg << std::endl;
-		return code;
-	case MODEL_NOT_FOUND:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[MODEL_NOT_FOUND ERROR] " << msg << std::endl;
-		return code;
-	case MODEL_BAD_FORMAT:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[MODEL_BAD_FORMAT ERROR] " << msg << std::endl;
-		return code;
-	case FILE_NOT_FOUND:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[FILE_NOT_FOUND ERROR] " << msg << std::endl;
-		return code;
-	case WINDOW_NOT_FOUND:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[WINDOW_NOT_FOUND ERROR] " << msg << std::endl;
-		return code;
-	case APP_INIT:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[APP_INIT ERROR] " << msg << std::endl;
-		return code;
-	case INIT_RENDER_TARGET:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[INIT_RENDER_TARGET ERROR] " << msg << std::endl;
-		return code;
-	case INVALID_USB_HANDLE:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[INVALID_USB_HANDLE ERROR] " << msg << std::endl;
-		return code;
-	case COMMSTATE_ERROR:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[COMMSTATE_ERROR ERROR] " << msg << std::endl;
-		return code;
-	case TIMEOUT_SET_ERROR:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[TIMEOUT_SET_ERROR ERROR] " << msg << std::endl;
-		return code;
-	case OPEN_FILE:
-		if(!(flags&ERR_NO_OUTPUT)) std::cerr << "[OPEN_FILE ERROR] " << msg << std::endl;
-		return code;
-	default: return SUCCESS;
-	}
-	return SUCCESS;
-}
-
 /*	TODOs Für das Speicher allokieren/löschen Zeugs hier:
 	1: Es ist beschissen.
 	2: Einzelne Varariablen werden mit new[] angelegt, was unnötiger Overhead sein kann
@@ -261,6 +179,101 @@ float stringToFloat(const char* str)noexcept{
     }
 
     return result * sign;
+}
+
+//Error-Codes
+enum ErrCode{
+	//Fenster
+	SUCCESS = 0,
+	GENERIC_ERROR,
+	APP_INIT,
+	BAD_ALLOC,
+	CREATE_WINDOW,
+	TEXTURE_NOT_FOUND,
+	MODEL_NOT_FOUND,
+	MODEL_BAD_FORMAT,
+	FILE_NOT_FOUND,
+	WINDOW_NOT_FOUND,
+	INIT_RENDER_TARGET,
+	//USB
+	INVALID_USB_HANDLE,
+	COMMSTATE_ERROR,
+	TIMEOUT_SET_ERROR,
+	//Intern
+	OPEN_FILE,
+	//Obj
+	ERR_MODEL_NOT_FOUND,
+	ERR_MATERIAL_NOT_FOUND,
+	ERR_MODEL_BAD_FORMAT,
+	ERR_MATERIAL_BAD_FORMAT
+};
+enum ErrCodeFlags{
+	ERR_NO_FLAG = 0,
+	ERR_NO_OUTPUT = 1,
+	ERR_ON_FATAL = 2
+};
+std::string getTimeString()noexcept{
+	SYSTEMTIME time;
+	GetLocalTime(&time);
+	std::string msg;
+	msg += longToString(time.wHour);
+	msg += ":"; 
+	msg += longToString(time.wMinute);
+	msg += ":"; 
+	msg += longToString(time.wSecond);
+	msg += ":";
+	msg += longToString(time.wMilliseconds);
+	return msg;
+}
+//TODO ERR_ON_FATAL ausgeben können wenn der nutzer es so möchte
+inline ErrCode ErrCheck(ErrCode code, const char* msg="\0", ErrCodeFlags flags=ERR_NO_FLAG){
+	std::string timeStr = getTimeString();
+	switch(code){
+	case BAD_ALLOC:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [BAD_ALLOC ERROR] " << msg << std::endl;
+		return code;
+	case GENERIC_ERROR:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [GENERIC_ERROR ERROR] " << msg << std::endl;
+		return code;
+	case CREATE_WINDOW:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [CREATE_WINDOW ERROR] " << msg << std::endl;
+		return code;
+	case TEXTURE_NOT_FOUND:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [TEXTURE_NOT_FOUND ERROR] " << msg << std::endl;
+		return code;
+	case MODEL_NOT_FOUND:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [MODEL_NOT_FOUND ERROR] " << msg << std::endl;
+		return code;
+	case MODEL_BAD_FORMAT:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [MODEL_BAD_FORMAT ERROR] " << msg << std::endl;
+		return code;
+	case FILE_NOT_FOUND:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [FILE_NOT_FOUND ERROR] " << msg << std::endl;
+		return code;
+	case WINDOW_NOT_FOUND:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [WINDOW_NOT_FOUND ERROR] " << msg << std::endl;
+		return code;
+	case APP_INIT:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [APP_INIT ERROR] " << msg << std::endl;
+		return code;
+	case INIT_RENDER_TARGET:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [INIT_RENDER_TARGET ERROR] " << msg << std::endl;
+		return code;
+	case INVALID_USB_HANDLE:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [INVALID_USB_HANDLE ERROR] " << msg << std::endl;
+		return code;
+	case COMMSTATE_ERROR:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [COMMSTATE_ERROR ERROR] " << msg << std::endl;
+		return code;
+	case TIMEOUT_SET_ERROR:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [TIMEOUT_SET_ERROR ERROR] " << msg << std::endl;
+		return code;
+	case OPEN_FILE:
+		if(!(flags&ERR_NO_OUTPUT)) std::cerr << timeStr << " [OPEN_FILE ERROR] " << msg << std::endl;
+		return code;
+	default: return SUCCESS;
+	}
+	return SUCCESS;
 }
 
 enum KEYBOARDBUTTON : unsigned long long{
