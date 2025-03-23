@@ -434,20 +434,20 @@ ErrCode loadShader(GLuint& shader, GLenum shaderType, const GLchar* code, GLint 
 }
 
 ErrCode loadShader(GLuint& shader, GLenum shaderType, const char* filename)noexcept{
-	GLchar* computeShaderCode = nullptr;
-    GLint computeShaderCodeSize = 0;
+	GLchar* code = nullptr;
+    GLint codeSize = 0;
     std::fstream file;
-    file.open("simulation.comp", std::ios::in | std::ios::binary);
+    file.open(filename, std::ios::in | std::ios::binary);
     if(!file.is_open()) return FILE_NOT_FOUND;
     file.seekg(0, std::ios::end);
     int filesize = file.tellg();
     file.seekg(0, std::ios::beg);
-    computeShaderCode = alloc<GLchar>(filesize, "Shadercode from File");
-    file.read((char*)computeShaderCode, filesize);
-    computeShaderCodeSize = filesize;
-	ErrCode code = loadShader(shader, shaderType, computeShaderCode, computeShaderCodeSize);
-	dealloc(computeShaderCode);
-	return code;
+    code = alloc<GLchar>(filesize, "Shadercode from File");
+    file.read((char*)code, filesize);
+    codeSize = filesize;
+	ErrCode ret = loadShader(shader, shaderType, code, codeSize);
+	dealloc(code);
+	return ret;
 }
 
 struct Image{
