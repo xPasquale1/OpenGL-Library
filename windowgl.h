@@ -79,6 +79,7 @@ PFNGLUNIFORM4FPROC glUniform4f;
 PFNGLUNIFORM1FPROC glUniform1f;
 PFNGLUNIFORM2FPROC glUniform2f;
 PFNGLUNIFORM3FPROC glUniform3f;
+PFNGLUNIFORM3IPROC glUniform3i;
 PFNGLUNIFORMMATRIX3FVPROC glUniformMatrix3fv;
 PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
 PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
@@ -155,6 +156,7 @@ ErrCode init()noexcept{
 	glUniform1f = (PFNGLUNIFORM1FPROC)loadGlFunction("glUniform1f");
 	glUniform2f = (PFNGLUNIFORM2FPROC)loadGlFunction("glUniform2f");
 	glUniform3f = (PFNGLUNIFORM3FPROC)loadGlFunction("glUniform3f");
+	glUniform3i = (PFNGLUNIFORM3IPROC)loadGlFunction("glUniform3i");
 	glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVPROC)loadGlFunction("glUniformMatrix3fv");
 	glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)loadGlFunction("glUniformMatrix4fv");
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)loadGlFunction("wglSwapIntervalEXT");
@@ -488,6 +490,22 @@ ErrCode loadImage(const char* name, Image& image)noexcept{
 	}
 	file.close();
 	return SUCCESS;
+}
+
+void rotateImage180(Image& image)noexcept{
+	DWORD revIdx = image.width*image.height-1;
+	for(DWORD i=0; i < image.width*image.height/2; ++i){
+		std::swap(image.data[i], image.data[revIdx--]);
+	}
+}
+
+void flipImageVertically(Image& image)noexcept{
+	WORD revY = image.height-1;
+	for(WORD y=0; y < image.height/2; ++y, --revY){
+		for(WORD x=0; x < image.width; ++x){
+			std::swap(image.data[y*image.width+x], image.data[revY*image.width+x]);
+		}
+	}
 }
 
 void destroyImage(Image& image)noexcept{
